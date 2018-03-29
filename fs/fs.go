@@ -68,6 +68,25 @@ func New() (http.FileSystem, error) {
 	return &statikFS{files: files}, nil
 }
 
+// Files is
+func Files(ext string) ([]string, error) {
+	if zipData == "" {
+		return nil, errors.New("statik/fs: no zip data registered")
+	}
+	zipReader, err := zip.NewReader(strings.NewReader(zipData), int64(len(zipData)))
+	if err != nil {
+		return nil, err
+	}
+	var files []string
+	for _, zipFile := range zipReader.File {
+		fname := zipFile.Name
+		if strings.HasSuffix(fname, ext) {
+			files = append(files, "/"+fname)
+		}
+	}
+	return files, err
+}
+
 func unzip(zf *zip.File) ([]byte, error) {
 	rc, err := zf.Open()
 	if err != nil {
